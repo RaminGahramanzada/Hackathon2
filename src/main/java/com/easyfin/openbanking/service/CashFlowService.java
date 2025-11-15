@@ -27,7 +27,7 @@ public class CashFlowService {
     private final CashFlowForecastRepository forecastRepository;
     
     /**
-     * Generate cash flow analysis
+     * Generate cash flow analysis with category breakdowns
      */
     public CashFlowDTO generateCashFlowAnalysis(Business business, LocalDateTime startDate, LocalDateTime endDate) {
         BigDecimal totalIncome = transactionRepository.sumIncomeByBusinessIdAndDateRange(
@@ -47,6 +47,30 @@ public class CashFlowService {
         dto.setTotalExpenses(totalExpenses);
         dto.setNetCashFlow(netCashFlow);
         dto.setCurrentBalance(netCashFlow); // Simplified
+        
+        // Calculate income breakdown by category
+        var incomeBreakdown = transactionRepository.findByBusinessIdAndIsIncomeTrueAndTransactionDateBetween(
+                business.getId(), startDate, endDate)
+                .stream()
+                .collect(Collectors.groupingBy(
+                        t -> t.getCategory() != null ? t.getCategory().name() : "Other",
+                        Collectors.reducing(BigDecimal.ZERO,
+                                t -> t.getAmount(),
+                                BigDecimal::add)
+                ));
+        dto.setIncomeByCategory(incomeBreakdown);
+        
+        // Calculate expense breakdown by category
+        var expenseBreakdown = transactionRepository.findByBusinessIdAndIsIncomeFalseAndTransactionDateBetween(
+                business.getId(), startDate, endDate)
+                .stream()
+                .collect(Collectors.groupingBy(
+                        t -> t.getCategory() != null ? t.getCategory().name() : "Other",
+                        Collectors.reducing(BigDecimal.ZERO,
+                                t -> t.getAmount(),
+                                BigDecimal::add)
+                ));
+        dto.setExpensesByCategory(expenseBreakdown);
         
         // Get forecasts
         List<CashFlowForecast> forecasts = forecastRepository.findFutureForecasts(

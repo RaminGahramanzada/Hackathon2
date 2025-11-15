@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 @Data
 @NoArgsConstructor
@@ -18,6 +19,11 @@ public class CashFlowDTO {
     private BigDecimal totalExpenses;
     private BigDecimal netCashFlow;
     private BigDecimal currentBalance;
+    
+    // Category breakdowns - shows where money comes from/goes to
+    private Map<String, BigDecimal> incomeByCategory;
+    private Map<String, BigDecimal> expensesByCategory;
+    
     private List<ForecastItem> forecast;
     
     @Data

@@ -313,7 +313,32 @@ Pending = Tax-related money in processing
   "totalExpenses": 32450.00,
   "netCashFlow": 15550.00,
   "currentBalance": 15550.00,
+  "incomeByCategory": {
+    "RESTAURANT_SALES": 45000.00,
+    "CATERING_SERVICES": 3000.00
+  },
+  "expensesByCategory": {
+    "FOOD_SUPPLIES": 12500.00,
+    "RENT": 9000.00,
+    "UTILITIES": 2400.00,
+    "SALARIES": 8550.00
+  },
   "forecast": [...]
+}
+```
+
+**iOS Model:**
+```swift
+struct CashFlowAnalysis: Codable {
+    let periodStart: String
+    let periodEnd: String
+    let totalIncome: Double
+    let totalExpenses: Double
+    let netCashFlow: Double
+    let currentBalance: Double
+    let incomeByCategory: [String: Double]     // Pul hansı kategoriyadan gəlir
+    let expensesByCategory: [String: Double]   // Pul hara gedir
+    let forecast: [ForecastItem]?
 }
 ```
 

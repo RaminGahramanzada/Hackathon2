@@ -70,5 +70,17 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
     List<Object[]> sumExpensesByCategory(@Param("businessId") Long businessId,
                                          @Param("startDate") LocalDateTime startDate,
                                          @Param("endDate") LocalDateTime endDate);
+    
+    // Find income transactions by date range
+    List<Transaction> findByBusinessIdAndIsIncomeTrueAndTransactionDateBetween(
+            Long businessId, 
+            LocalDateTime startDate, 
+            LocalDateTime endDate);
+    
+    // Find expense transactions by date range
+    List<Transaction> findByBusinessIdAndIsIncomeFalseAndTransactionDateBetween(
+            Long businessId, 
+            LocalDateTime startDate, 
+            LocalDateTime endDate);
 }
 
