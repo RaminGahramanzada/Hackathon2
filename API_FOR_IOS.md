@@ -520,6 +520,42 @@ struct AlertResponse: Codable {
 
 ## 📄 REPORTS
 
+### Generate Payroll Report PDF (⭐ NEW - For "Export PDF Report" Button)
+**Endpoint:** `POST /api/v1/reports/pdf/payroll`
+
+**Description:** Generate PDF report for current month's payroll with all employee details, tax calculations, and cost breakdown
+
+**Response:**
+```json
+{
+  "status": "success",
+  "downloadUrl": "/reports/payroll-report-NOVEMBER-2024.pdf",
+  "message": "Payroll report PDF generated successfully"
+}
+```
+
+**iOS Implementation:**
+```swift
+func exportPayrollPDF() {
+    let url = URL(string: "https://hackathon2-ibmt.onrender.com/api/v1/reports/pdf/payroll")!
+    var request = URLRequest(url: url)
+    request.httpMethod = "POST"
+    request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+    
+    URLSession.shared.dataTask(with: request) { data, response, error in
+        guard let data = data else { return }
+        
+        if let json = try? JSONDecoder().decode(PDFResponse.self, from: data) {
+            // Show success message and provide download link
+            print("PDF Ready: \(json.downloadUrl)")
+            // Open PDF or share
+        }
+    }.resume()
+}
+```
+
+---
+
 ### Generate Tax Report PDF
 **Endpoint:** `POST /api/v1/reports/pdf/tax-report`
 

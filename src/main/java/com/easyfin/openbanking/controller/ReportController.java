@@ -44,6 +44,18 @@ public class ReportController {
                 .body("{\"status\": \"success\", \"downloadUrl\": \"/reports/financial-statement-2024.pdf\", \"message\": \"Financial statement PDF generated successfully\"}");
     }
     
+    @PostMapping("/pdf/payroll")
+    @Operation(summary = "Generate payroll report PDF for current month")
+    public ResponseEntity<String> generatePayrollPdf() {
+        // Mock implementation - in production, use PDFBox or iText to generate actual PDF
+        String currentMonth = java.time.LocalDate.now().getMonth().toString();
+        String year = String.valueOf(java.time.LocalDate.now().getYear());
+        
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_JSON)
+                .body("{\"status\": \"success\", \"downloadUrl\": \"/reports/payroll-report-" + currentMonth + "-" + year + ".pdf\", \"message\": \"Payroll report PDF generated successfully\"}");
+    }
+    
     @GetMapping("/export/csv")
     @Operation(summary = "Export transactions as CSV")
     public ResponseEntity<String> exportToCsv() {
