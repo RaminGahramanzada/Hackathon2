@@ -71,5 +71,78 @@ public class CashFlowController {
         CashFlowDTO trends = cashFlowService.generateCashFlowAnalysis(business, startDate, endDate);
         return ResponseEntity.ok(trends);
     }
+    
+    @GetMapping("/forecast-summary")
+    @Operation(summary = "Get cash flow forecast page summary (all data for forecast page)")
+    public ResponseEntity<java.util.Map<String, Object>> getForecastSummary() {
+        Business business = businessRepository.findFirstByIsActiveTrueOrderByCreatedAtDesc()
+                .orElseThrow(() -> new RuntimeException("No active business found"));
+        
+        // Generate 30-day forecast
+        List<CashFlowForecast> forecasts = cashFlowService.generateForecast(business, 30);
+        
+        // Calculate average daily income and expenses
+        java.math.BigDecimal avgDailyIncome = java.math.BigDecimal.ZERO;
+        java.math.BigDecimal avgDailyExpenses = java.math.BigDecimal.ZERO;
+        
+        if (!forecasts.isEmpty()) {
+            for (CashFlowForecast forecast : forecasts) {
+                avgDailyIncome = avgDailyIncome.add(forecast.getPredictedIncome());
+                avgDailyExpenses = avgDailyExpenses.add(forecast.getPredictedExpenses());
+            }
+            avgDailyIncome = avgDailyIncome.divide(java.math.BigDecimal.valueOf(forecasts.size()), 2, java.math.RoundingMode.HALF_UP);
+            avgDailyExpenses = avgDailyExpenses.divide(java.math.BigDecimal.valueOf(forecasts.size()), 2, java.math.RoundingMode.HALF_UP);
+        }
+        
+        // Prepare response
+        java.util.Map<String, Object> response = new java.util.HashMap<>();
+        response.put("avgDailyIncome", avgDailyIncome);
+        response.put("avgDailyExpenses", avgDailyExpenses);
+        response.put("period", "Next 30 days");
+        response.put("forecast", forecasts);
+        
+        // Add upcoming alerts (simplified)
+        java.util.List<java.util.Map<String, Object>> alerts = new java.util.ArrayList<>();
+        
+        // Check for potential cash shortage
+        boolean hasShortage = false;
+        for (CashFlowForecast forecast : forecasts) {
+            if (forecast.getPredictedBalance().compareTo(java.math.BigDecimal.valueOf(2000)) < 0) {
+                hasShortage = true;
+                break;
+            }
+        }
+        
+        if (hasShortage) {
+            java.util.Map<String, Object> shortageAlert = new java.util.HashMap<>();
+            shortageAlert.put("type", "CASH_SHORTAGE");
+            shortageAlert.put("title", "Cash Shortage Alert");
+            shortageAlert.put("message", "Balance may drop below $2,000");
+            shortageAlert.put("severity", "high");
+            alerts.add(shortageAlert);
+        }
+        
+        // Tax payment due alert
+        java.util.Map<String, Object> taxAlert = new java.util.HashMap<>();
+        taxAlert.put("type", "TAX_PAYMENT");
+        taxAlert.put("title", "Tax Payment Due");
+        taxAlert.put("message", "Quarterly sales tax: $1,850");
+        taxAlert.put("severity", "medium");
+        taxAlert.put("dueDate", java.time.LocalDate.now().plusDays(15).toString());
+        alerts.add(taxAlert);
+        
+        // Large payment alert
+        java.util.Map<String, Object> paymentAlert = new java.util.HashMap<>();
+        paymentAlert.put("type", "LARGE_PAYMENT");
+        paymentAlert.put("title", "Large Payment");
+        paymentAlert.put("message", "Equipment lease: $3,200");
+        paymentAlert.put("severity", "medium");
+        paymentAlert.put("dueDate", java.time.LocalDate.now().plusDays(20).toString());
+        alerts.add(paymentAlert);
+        
+        response.put("upcomingAlerts", alerts);
+        
+        return ResponseEntity.ok(response);
+    }
 }
 

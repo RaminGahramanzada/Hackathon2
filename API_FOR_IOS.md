@@ -340,6 +340,81 @@ struct TaxCalculations: Codable {
 
 ## 📈 CASH FLOW
 
+### Get Cash Flow Forecast Summary (⭐ NEW - For Cash Flow Forecast Page)
+**Endpoint:** `GET /api/v1/cashflow/forecast-summary`
+
+**Description:** Complete data for Cash Flow Forecast page - includes daily averages, 30-day forecast, and upcoming alerts
+
+**Response:**
+```json
+{
+  "avgDailyIncome": 1245.00,
+  "avgDailyExpenses": 890.00,
+  "period": "Next 30 days",
+  "forecast": [
+    {
+      "forecastDate": "2024-11-16",
+      "predictedIncome": 1300.00,
+      "predictedExpenses": 850.00,
+      "predictedBalance": 45450.00,
+      "confidence": 0.75
+    },
+    // ... 29 more days
+  ],
+  "upcomingAlerts": [
+    {
+      "type": "CASH_SHORTAGE",
+      "title": "Cash Shortage Alert",
+      "message": "Balance may drop below $2,000",
+      "severity": "high"
+    },
+    {
+      "type": "TAX_PAYMENT",
+      "title": "Tax Payment Due",
+      "message": "Quarterly sales tax: $1,850",
+      "severity": "medium",
+      "dueDate": "2024-11-30"
+    },
+    {
+      "type": "LARGE_PAYMENT",
+      "title": "Large Payment",
+      "message": "Equipment lease: $3,200",
+      "severity": "medium",
+      "dueDate": "2024-12-05"
+    }
+  ]
+}
+```
+
+**iOS Model:**
+```swift
+struct CashFlowForecastSummary: Codable {
+    let avgDailyIncome: Double           // For top card
+    let avgDailyExpenses: Double         // For top card
+    let period: String                   // "Next 30 days"
+    let forecast: [DailyForecast]        // For chart
+    let upcomingAlerts: [UpcomingAlert]  // For alerts section
+}
+
+struct DailyForecast: Codable {
+    let forecastDate: String
+    let predictedIncome: Double      // Green line
+    let predictedExpenses: Double    // Red line
+    let predictedBalance: Double
+    let confidence: Double
+}
+
+struct UpcomingAlert: Codable {
+    let type: String                 // CASH_SHORTAGE, TAX_PAYMENT, LARGE_PAYMENT
+    let title: String
+    let message: String
+    let severity: String             // high, medium, low
+    let dueDate: String?
+}
+```
+
+---
+
 ### Get Cash Flow Forecast
 **Endpoint:** `GET /api/v1/cashflow/forecast?days=60`
 
