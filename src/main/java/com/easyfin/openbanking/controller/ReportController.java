@@ -44,16 +44,42 @@ public class ReportController {
                 .body("{\"status\": \"success\", \"downloadUrl\": \"/reports/financial-statement-2024.pdf\", \"message\": \"Financial statement PDF generated successfully\"}");
     }
     
-    @PostMapping("/pdf/payroll")
-    @Operation(summary = "Generate payroll report PDF for current month")
-    public ResponseEntity<String> generatePayrollPdf() {
-        // Mock implementation - in production, use PDFBox or iText to generate actual PDF
+    @GetMapping("/pdf/payroll")
+    @Operation(summary = "Download payroll report PDF for current month")
+    public ResponseEntity<byte[]> downloadPayrollPdf() {
+        // Mock PDF content - in production, use PDFBox or iText to generate actual formatted PDF
         String currentMonth = java.time.LocalDate.now().getMonth().toString();
         String year = String.valueOf(java.time.LocalDate.now().getYear());
         
+        // Create simple PDF content (mock)
+        String pdfContent = "%PDF-1.4\n" +
+                "1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj\n" +
+                "2 0 obj<</Type/Pages/Kids[3 0 R]/Count 1>>endobj\n" +
+                "3 0 obj<</Type/Page/Parent 2 0 R/MediaBox[0 0 612 792]/Contents 4 0 R/Resources<</Font<</F1 5 0 R>>>>>>endobj\n" +
+                "4 0 obj<</Length 120>>stream\n" +
+                "BT\n" +
+                "/F1 24 Tf\n" +
+                "50 700 Td\n" +
+                "(Payroll Report - " + currentMonth + " " + year + ") Tj\n" +
+                "0 -30 Td\n" +
+                "(Total Gross: $18,450) Tj\n" +
+                "0 -30 Td\n" +
+                "(Total Taxes: $3,691) Tj\n" +
+                "0 -30 Td\n" +
+                "(Net Cost: $22,141) Tj\n" +
+                "ET\n" +
+                "endstream endobj\n" +
+                "5 0 obj<</Type/Font/Subtype/Type1/BaseFont/Helvetica>>endobj\n" +
+                "xref\n0 6\n0000000000 65535 f\n0000000009 00000 n\n0000000056 00000 n\n0000000115 00000 n\n0000000259 00000 n\n0000000429 00000 n\n" +
+                "trailer<</Size 6/Root 1 0 R>>\nstartxref\n493\n%%EOF";
+        
+        byte[] pdfBytes = pdfContent.getBytes(java.nio.charset.StandardCharsets.UTF_8);
+        
         return ResponseEntity.ok()
-                .contentType(MediaType.APPLICATION_JSON)
-                .body("{\"status\": \"success\", \"downloadUrl\": \"/reports/payroll-report-" + currentMonth + "-" + year + ".pdf\", \"message\": \"Payroll report PDF generated successfully\"}");
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=payroll-report-" + currentMonth + "-" + year + ".pdf")
+                .contentType(MediaType.APPLICATION_PDF)
+                .contentLength(pdfBytes.length)
+                .body(pdfBytes);
     }
     
     @GetMapping("/export/csv")

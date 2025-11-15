@@ -520,37 +520,46 @@ struct AlertResponse: Codable {
 
 ## 📄 REPORTS
 
-### Generate Payroll Report PDF (⭐ NEW - For "Export PDF Report" Button)
-**Endpoint:** `POST /api/v1/reports/pdf/payroll`
+### Download Payroll Report PDF (⭐ NEW - For "Export PDF Report" Button)
+**Endpoint:** `GET /api/v1/reports/pdf/payroll`
 
-**Description:** Generate PDF report for current month's payroll with all employee details, tax calculations, and cost breakdown
+**Description:** Download PDF report for current month's payroll - returns actual PDF file
 
-**Response:**
-```json
-{
-  "status": "success",
-  "downloadUrl": "/reports/payroll-report-NOVEMBER-2024.pdf",
-  "message": "Payroll report PDF generated successfully"
-}
-```
+**Response:** Binary PDF file (application/pdf)
 
 **iOS Implementation:**
 ```swift
 func exportPayrollPDF() {
     let url = URL(string: "https://hackathon2-ibmt.onrender.com/api/v1/reports/pdf/payroll")!
-    var request = URLRequest(url: url)
-    request.httpMethod = "POST"
-    request.setValue("application/json", forHTTPHeaderField: "Content-Type")
     
-    URLSession.shared.dataTask(with: request) { data, response, error in
+    URLSession.shared.dataTask(with: url) { data, response, error in
         guard let data = data else { return }
         
-        if let json = try? JSONDecoder().decode(PDFResponse.self, from: data) {
-            // Show success message and provide download link
-            print("PDF Ready: \(json.downloadUrl)")
-            // Open PDF or share
+        // Save PDF to temporary file
+        let tempURL = FileManager.default.temporaryDirectory
+            .appendingPathComponent("payroll-report.pdf")
+        
+        do {
+            try data.write(to: tempURL)
+            
+            DispatchQueue.main.async {
+                // Share or open PDF
+                let activityVC = UIActivityViewController(
+                    activityItems: [tempURL],
+                    applicationActivities: nil
+                )
+                // Present activity controller
+            }
+        } catch {
+            print("Error saving PDF: \(error)")
         }
     }.resume()
+}
+
+// Or simply open in Safari for download:
+func downloadPayrollPDF() {
+    let url = URL(string: "https://hackathon2-ibmt.onrender.com/api/v1/reports/pdf/payroll")!
+    UIApplication.shared.open(url) // Opens and downloads PDF
 }
 ```
 
