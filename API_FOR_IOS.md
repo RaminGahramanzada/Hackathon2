@@ -2,27 +2,25 @@
 
 ## 🌐 Base URL
 ```
-Production: https://stevie-superdivine-unpompously.ngrok-free.dev
+Production: [WILL BE PROVIDED AFTER DEPLOYMENT]
 Local: http://localhost:8080
 ```
 
 ## 🔑 API Version
 All endpoints start with: `/api/v1`
 
-## ⚠️ IMPORTANT: Required Header for ngrok
-**YOU MUST ADD THIS HEADER TO ALL REQUESTS:**
-```
-ngrok-skip-browser-warning: true
-```
+## ✅ Connection Requirements
+- **CORS**: Fully configured ✅
+- **HTTPS**: Production uses HTTPS ✅
+- **No special headers required** for production deployment
+- **Content-Type**: `application/json` (recommended)
 
-Without this header, you will get **"Network Failure"** or **CORS errors**.
-
-**Swift Example:**
+## 🔧 If Using ngrok (Temporary Testing Only)
+If the backend is temporarily using ngrok, add this header:
 ```swift
 request.setValue("true", forHTTPHeaderField: "ngrok-skip-browser-warning")
 ```
-
-See `IOS_NGROK_FIX.md` for detailed implementation guide.
+See `IOS_NGROK_FIX.md` for details.
 
 ---
 
