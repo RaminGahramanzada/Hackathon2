@@ -26,13 +26,177 @@ public class ReportController {
                 .body("{\"status\": \"success\", \"downloadUrl\": \"/reports/receipts-2024-11.pdf\", \"message\": \"Receipts PDF generated successfully\"}");
     }
     
-    @PostMapping("/pdf/tax-report")
-    @Operation(summary = "Generate tax report PDF")
-    public ResponseEntity<String> generateTaxReportPdf() {
-        // Mock implementation
+    @GetMapping("/pdf/tax-report")
+    @Operation(summary = "Download tax report PDF for current year")
+    public ResponseEntity<byte[]> downloadTaxReportPdf() {
+        String year = String.valueOf(java.time.LocalDate.now().getYear());
+        String date = java.time.LocalDate.now().toString();
+        
+        // Create detailed PDF content with tax deductible information
+        String pdfContent = "%PDF-1.4\n" +
+                "1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj\n" +
+                "2 0 obj<</Type/Pages/Kids[3 0 R]/Count 1>>endobj\n" +
+                "3 0 obj<</Type/Page/Parent 2 0 R/MediaBox[0 0 612 792]/Contents 4 0 R/Resources<</Font<</F1 5 0 R/F2 6 0 R/F3 7 0 R>>>>>>endobj\n" +
+                "4 0 obj<</Length 2600>>stream\n" +
+                "BT\n" +
+                "% Header - Company Name\n" +
+                "/F1 28 Tf\n" +
+                "0 0 0.8 rg\n" +
+                "50 750 Td\n" +
+                "(EASYFIN - Tax Ready Report) Tj\n" +
+                "% Date\n" +
+                "/F2 10 Tf\n" +
+                "0 0 0 rg\n" +
+                "0 -20 Td\n" +
+                "(Report Date: " + date + ") Tj\n" +
+                "0 -15 Td\n" +
+                "(Tax Year: " + year + ") Tj\n" +
+                "% Divider Line\n" +
+                "ET\n" +
+                "0.7 0.7 0.7 RG\n" +
+                "1 w\n" +
+                "50 700 m\n" +
+                "550 700 l\n" +
+                "S\n" +
+                "BT\n" +
+                "% Summary Section\n" +
+                "/F1 18 Tf\n" +
+                "0 0.5 0 rg\n" +
+                "50 680 Td\n" +
+                "(TOTAL DEDUCTIBLE EXPENSES) Tj\n" +
+                "/F1 24 Tf\n" +
+                "0 -30 Td\n" +
+                "($12,847.50) Tj\n" +
+                "/F2 10 Tf\n" +
+                "0 0 0 rg\n" +
+                "0 -20 Td\n" +
+                "(+$2,340.00 from last month) Tj\n" +
+                "% Category Breakdown Section\n" +
+                "/F1 16 Tf\n" +
+                "0 0.3 0.6 rg\n" +
+                "0 -35 Td\n" +
+                "(EXPENSE BREAKDOWN BY CATEGORY) Tj\n" +
+                "/F2 11 Tf\n" +
+                "0 0 0 rg\n" +
+                "0 -25 Td\n" +
+                "(Business Expenses: $8,425.00 \\(65.6%\\)) Tj\n" +
+                "0 -18 Td\n" +
+                "(Office Supplies: $4,422.50 \\(34.4%\\)) Tj\n" +
+                "% Tax Savings Section\n" +
+                "/F1 16 Tf\n" +
+                "0 0.3 0.6 rg\n" +
+                "0 -35 Td\n" +
+                "(ESTIMATED TAX SAVINGS) Tj\n" +
+                "/F2 11 Tf\n" +
+                "0 0 0 rg\n" +
+                "0 -25 Td\n" +
+                "(Total Deductible Amount: $12,847.50) Tj\n" +
+                "0 -18 Td\n" +
+                "(Estimated Tax Rate: 14%) Tj\n" +
+                "0 -18 Td\n" +
+                "(Potential Savings: $1,798.65) Tj\n" +
+                "% Recent Deductible Transactions\n" +
+                "/F1 16 Tf\n" +
+                "0 0.3 0.6 rg\n" +
+                "0 -35 Td\n" +
+                "(RECENT DEDUCTIBLE TRANSACTIONS) Tj\n" +
+                "% Table Header\n" +
+                "/F3 9 Tf\n" +
+                "0 -22 Td\n" +
+                "ET\n" +
+                "0.8 0.8 0.8 rg\n" +
+                "50 330 500 15 re f\n" +
+                "BT\n" +
+                "0 0 0 rg\n" +
+                "55 335 Td\n" +
+                "(Date) Tj\n" +
+                "80 0 Td\n" +
+                "(Merchant) Tj\n" +
+                "180 0 Td\n" +
+                "(Category) Tj\n" +
+                "120 0 Td\n" +
+                "(Amount) Tj\n" +
+                "% Transaction 1\n" +
+                "/F2 9 Tf\n" +
+                "-380 -18 Td\n" +
+                "(Dec 15, 2024) Tj\n" +
+                "80 0 Td\n" +
+                "(Office Equipment Store) Tj\n" +
+                "180 0 Td\n" +
+                "(Office Supplies) Tj\n" +
+                "120 0 Td\n" +
+                "($1,249.99) Tj\n" +
+                "% Transaction 2\n" +
+                "-380 -15 Td\n" +
+                "(Dec 12, 2024) Tj\n" +
+                "80 0 Td\n" +
+                "(Internet Provider) Tj\n" +
+                "180 0 Td\n" +
+                "(Telecommunications) Tj\n" +
+                "120 0 Td\n" +
+                "($89.99) Tj\n" +
+                "% Transaction 3\n" +
+                "-380 -15 Td\n" +
+                "(Dec 10, 2024) Tj\n" +
+                "80 0 Td\n" +
+                "(Business Travel) Tj\n" +
+                "180 0 Td\n" +
+                "(Transportation) Tj\n" +
+                "120 0 Td\n" +
+                "($156.75) Tj\n" +
+                "% Transaction 4\n" +
+                "-380 -15 Td\n" +
+                "(Dec 08, 2024) Tj\n" +
+                "80 0 Td\n" +
+                "(Office Rent) Tj\n" +
+                "180 0 Td\n" +
+                "(Rent) Tj\n" +
+                "120 0 Td\n" +
+                "($1,500.00) Tj\n" +
+                "% Transaction 5\n" +
+                "-380 -15 Td\n" +
+                "(Dec 05, 2024) Tj\n" +
+                "80 0 Td\n" +
+                "(Electricity Provider) Tj\n" +
+                "180 0 Td\n" +
+                "(Utilities) Tj\n" +
+                "120 0 Td\n" +
+                "($245.50) Tj\n" +
+                "% Recommendation Section\n" +
+                "/F1 14 Tf\n" +
+                "0.8 0.5 0 rg\n" +
+                "-300 -35 Td\n" +
+                "(RECOMMENDATION) Tj\n" +
+                "/F2 10 Tf\n" +
+                "0 0 0 rg\n" +
+                "0 -20 Td\n" +
+                "(Simplified Taxation recommended based on your) Tj\n" +
+                "0 -15 Td\n" +
+                "(expense profile. This could save you more in taxes.) Tj\n" +
+                "% Footer\n" +
+                "/F2 8 Tf\n" +
+                "0.5 0.5 0.5 rg\n" +
+                "0 -60 Td\n" +
+                "(Generated by EasyFin - Financial Management System) Tj\n" +
+                "0 -12 Td\n" +
+                "(www.easyfin.az | support@easyfin.az) Tj\n" +
+                "0 -12 Td\n" +
+                "(This report is for informational purposes only.) Tj\n" +
+                "ET\n" +
+                "endstream endobj\n" +
+                "5 0 obj<</Type/Font/Subtype/Type1/BaseFont/Helvetica-Bold>>endobj\n" +
+                "6 0 obj<</Type/Font/Subtype/Type1/BaseFont/Helvetica>>endobj\n" +
+                "7 0 obj<</Type/Font/Subtype/Type1/BaseFont/Helvetica-Oblique>>endobj\n" +
+                "xref\n0 8\n0000000000 65535 f\n0000000009 00000 n\n0000000056 00000 n\n0000000115 00000 n\n0000000259 00000 n\n0000002929 00000 n\n0000003007 00000 n\n0000003079 00000 n\n" +
+                "trailer<</Size 8/Root 1 0 R>>\nstartxref\n3158\n%%EOF";
+        
+        byte[] pdfBytes = pdfContent.getBytes(java.nio.charset.StandardCharsets.UTF_8);
+        
         return ResponseEntity.ok()
-                .contentType(MediaType.APPLICATION_JSON)
-                .body("{\"status\": \"success\", \"downloadUrl\": \"/reports/tax-report-Q4-2024.pdf\", \"message\": \"Tax report PDF generated successfully\"}");
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=EasyFin-Tax-Report-" + year + ".pdf")
+                .contentType(MediaType.APPLICATION_PDF)
+                .contentLength(pdfBytes.length)
+                .body(pdfBytes);
     }
     
     @PostMapping("/pdf/financial-statement")
