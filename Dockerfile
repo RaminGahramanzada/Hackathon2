@@ -1,5 +1,6 @@
 # Multi-stage build for optimized image size
 # Stage 1: Build the application
+# Updated: Force fresh build for payroll summary endpoint
 FROM maven:3.9-eclipse-temurin-17 AS build
 
 WORKDIR /app
