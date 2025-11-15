@@ -3,7 +3,6 @@ package com.easyfin.openbanking.controller;
 import com.easyfin.openbanking.dto.PayrollDTO;
 import com.easyfin.openbanking.model.Business;
 import com.easyfin.openbanking.model.Employee;
-import com.easyfin.openbanking.model.Payroll;
 import com.easyfin.openbanking.repository.BusinessRepository;
 import com.easyfin.openbanking.repository.EmployeeRepository;
 import com.easyfin.openbanking.service.PayrollService;
@@ -33,7 +32,7 @@ public class PayrollController {
     private final EmployeeRepository employeeRepository;
     
     @GetMapping("/calculate")
-    @Operation(summary = "Calculate payroll for current month")
+    @Operation(summary = "Calculate payroll for current month (individual employees)")
     public ResponseEntity<List<PayrollDTO>> calculatePayroll() {
         Business business = businessRepository.findFirstByIsActiveTrueOrderByCreatedAtDesc()
                 .orElseThrow(() -> new RuntimeException("No active business found"));
@@ -46,6 +45,60 @@ public class PayrollController {
                 .toList();
         
         return ResponseEntity.ok(payrolls);
+    }
+    
+    @GetMapping("/summary")
+    @Operation(summary = "Get monthly payroll summary (total for all employees)")
+    public ResponseEntity<Map<String, Object>> getPayrollSummary() {
+        Business business = businessRepository.findFirstByIsActiveTrueOrderByCreatedAtDesc()
+                .orElseThrow(() -> new RuntimeException("No active business found"));
+        
+        List<Employee> employees = employeeRepository.findByBusinessIdAndIsActiveTrue(business.getId());
+        LocalDate currentMonth = LocalDate.now().withDayOfMonth(1);
+        
+        BigDecimal totalGrossPayroll = BigDecimal.ZERO;
+        BigDecimal totalEmployerSsf = BigDecimal.ZERO;
+        BigDecimal totalEmployeeSsf = BigDecimal.ZERO;
+        BigDecimal totalIncomeTax = BigDecimal.ZERO;
+        BigDecimal totalNetPayroll = BigDecimal.ZERO;
+        BigDecimal totalEmployerCost = BigDecimal.ZERO;
+        
+        for (Employee employee : employees) {
+            PayrollDTO payroll = payrollService.calculatePayroll(employee, currentMonth);
+            totalGrossPayroll = totalGrossPayroll.add(payroll.getGrossSalary());
+            totalEmployerSsf = totalEmployerSsf.add(payroll.getEmployerSsfContribution());
+            totalEmployeeSsf = totalEmployeeSsf.add(payroll.getEmployeeSsfContribution());
+            totalIncomeTax = totalIncomeTax.add(payroll.getIncomeTax());
+            totalNetPayroll = totalNetPayroll.add(payroll.getNetSalary());
+            totalEmployerCost = totalEmployerCost.add(payroll.getTotalEmployerCost());
+        }
+        
+        BigDecimal totalTaxes = totalEmployerSsf.add(totalEmployeeSsf).add(totalIncomeTax);
+        
+        Map<String, Object> summary = new HashMap<>();
+        summary.put("month", currentMonth);
+        summary.put("employeeCount", employees.size());
+        summary.put("totalGrossPayroll", totalGrossPayroll);
+        summary.put("totalTaxes", totalTaxes);
+        summary.put("totalNetPayrollCost", totalEmployerCost);
+        
+        // Breakdown for pie chart
+        Map<String, BigDecimal> breakdown = new HashMap<>();
+        breakdown.put("grossWages", totalGrossPayroll);
+        breakdown.put("employerSSF", totalEmployerSsf);
+        breakdown.put("employeeSSF", totalEmployeeSsf);
+        breakdown.put("incomeTax", totalIncomeTax);
+        summary.put("costBreakdown", breakdown);
+        
+        // Tax details
+        Map<String, Object> taxDetails = new HashMap<>();
+        taxDetails.put("socialSecurityTax", totalEmployerSsf.add(totalEmployeeSsf));
+        taxDetails.put("employerSSF", totalEmployerSsf);
+        taxDetails.put("employeeSSF", totalEmployeeSsf);
+        taxDetails.put("incomeTax", totalIncomeTax);
+        summary.put("taxCalculations", taxDetails);
+        
+        return ResponseEntity.ok(summary);
     }
     
     @GetMapping("/taxes")

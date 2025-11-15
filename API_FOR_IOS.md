@@ -186,10 +186,69 @@ Pending = Tax-related money in processing
 
 ## 💼 PAYROLL
 
-### Calculate Payroll
+### Get Monthly Payroll Summary (⭐ NEW - For Payroll Calculator Page)
+**Endpoint:** `GET /api/v1/payroll/summary`
+
+**Description:** Get monthly payroll summary for ALL employees (total aggregated data)
+
+**Response:**
+```json
+{
+  "month": "2024-11-01",
+  "employeeCount": 7,
+  "totalGrossPayroll": 18450.00,
+  "totalTaxes": 3691.00,
+  "totalNetPayrollCost": 22141.00,
+  
+  "costBreakdown": {
+    "grossWages": 18450.00,
+    "employerSSF": 1650.00,
+    "employeeSSF": 225.00,
+    "incomeTax": 1200.00
+  },
+  
+  "taxCalculations": {
+    "socialSecurityTax": 1875.00,
+    "employerSSF": 1650.00,
+    "employeeSSF": 225.00,
+    "incomeTax": 1200.00
+  }
+}
+```
+
+**iOS Model:**
+```swift
+struct PayrollSummary: Codable {
+    let month: String
+    let employeeCount: Int
+    let totalGrossPayroll: Double          // For "Gross Payroll" card
+    let totalTaxes: Double                 // For "Total Taxes" card
+    let totalNetPayrollCost: Double        // For "Net Payroll Cost"
+    let costBreakdown: CostBreakdown       // For Pie Chart
+    let taxCalculations: TaxCalculations   // For "Tax Calculations" section
+}
+
+struct CostBreakdown: Codable {
+    let grossWages: Double      // 83.3% in pie chart
+    let employerSSF: Double     // State Tax
+    let employeeSSF: Double     // FICA
+    let incomeTax: Double       // Federal
+}
+
+struct TaxCalculations: Codable {
+    let socialSecurityTax: Double  // Total SSF (employer + employee)
+    let employerSSF: Double
+    let employeeSSF: Double
+    let incomeTax: Double
+}
+```
+
+---
+
+### Calculate Payroll (Individual Employees)
 **Endpoint:** `GET /api/v1/payroll/calculate`
 
-**Description:** Calculate current month payroll for all employees
+**Description:** Calculate current month payroll for each employee individually
 
 **Response:**
 ```json
