@@ -34,8 +34,8 @@ public class OpenApiConfig {
                                 .name("MIT License")
                                 .url("https://opensource.org/licenses/MIT")))
                 .servers(Arrays.asList(
-                        new Server().url("http://localhost:8080").description("Local Development Server"),
-                        new Server().url("https://api.easyfin.az").description("Production Server")
+                        new Server().url("https://hackathon2-ibmt.onrender.com").description("Production Server - Render"),
+                        new Server().url("http://localhost:8080").description("Local Development Server")
                 ))
                 .tags(Arrays.asList(
                         new Tag().name("Dashboard").description("Dashboard and overview endpoints"),

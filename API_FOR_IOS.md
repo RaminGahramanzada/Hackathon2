@@ -2,8 +2,8 @@
 
 ## 🌐 Base URL
 ```
-Production: [WILL BE PROVIDED AFTER DEPLOYMENT]
-Local: http://localhost:8080
+Production: https://hackathon2-ibmt.onrender.com/api/v1
+Local: http://localhost:8080/api/v1
 ```
 
 ## 🔑 API Version
@@ -564,7 +564,8 @@ All amounts are in **AZN** (Azerbaijan Manat)
 
 Use Swagger UI for testing:
 ```
-https://stevie-superdivine-unpompously.ngrok-free.dev/swagger-ui.html
+Production: https://hackathon2-ibmt.onrender.com/swagger-ui.html
+Local: http://localhost:8080/swagger-ui.html
 ```
 
 ---

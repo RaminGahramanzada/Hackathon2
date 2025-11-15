@@ -1,6 +1,17 @@
 # 🔧 ngrok CORS Fix - iOS Developer Guide
 
-## Problem
+## ✅ UPDATE: Production API Now Available!
+
+**Production URL:** `https://hackathon2-ibmt.onrender.com/api/v1`
+
+**No special headers needed for production!** Just use:
+```swift
+let baseURL = "https://hackathon2-ibmt.onrender.com/api/v1"
+```
+
+---
+
+## Problem (Only for ngrok testing)
 When using ngrok free tier, you get a **"Network Failure"** or **CORS error** because ngrok shows a browser warning page before allowing API requests through.
 
 ## ✅ Solution (BACKEND - ALREADY FIXED)
