@@ -696,6 +696,94 @@ func downloadPayrollPDF() {
 
 ---
 
+## 📊 TAX READY PAGE
+
+### Get Tax Ready Data (Complete Page Data)
+**Endpoint:** `GET /api/v1/tax/ready`
+
+**Description:** Returns complete data for Tax Ready page - total deductible expenses, category breakdown, recent transactions, and tax recommendations.
+
+**Response:**
+```json
+{
+  "year": 2024,
+  "totalDeductible": 12847.50,
+  "lastMonthChange": 2340.00,
+  
+  "categoryBreakdown": {
+    "Business Expenses": 8425.00,
+    "Office Supplies": 4422.50
+  },
+  
+  "recommendation": {
+    "type": "SIMPLIFIED_TAXATION",
+    "title": "Simplified Taxation recommended",
+    "message": "Based on your expense profile, simplified taxation (sadələşdirilmiş vergi) could save you more",
+    "actionUrl": "/recommendations"
+  },
+  
+  "recentTransactions": [
+    {
+      "id": 1,
+      "merchantName": "Office Equipment Store",
+      "description": "Laptop and accessories",
+      "amount": 1249.99,
+      "date": "2024-12-15",
+      "category": "OFFICE_SUPPLIES",
+      "isDeductible": true
+    },
+    {
+      "id": 2,
+      "merchantName": "Internet Provider",
+      "description": "Business internet service",
+      "amount": 89.99,
+      "date": "2024-12-12",
+      "category": "TELECOMMUNICATIONS",
+      "isDeductible": true
+    }
+  ]
+}
+```
+
+**iOS Model:**
+```swift
+struct TaxReadyData: Codable {
+    let year: Int
+    let totalDeductible: Double           // For main card: "$12,847.50"
+    let lastMonthChange: Double           // For "+$2,340 from last month"
+    let categoryBreakdown: [String: Double]  // For category cards
+    let recommendation: TaxRecommendation
+    let recentTransactions: [DeductibleTransaction]
+}
+
+struct TaxRecommendation: Codable {
+    let type: String
+    let title: String
+    let message: String
+    let actionUrl: String
+}
+
+struct DeductibleTransaction: Codable {
+    let id: Int
+    let merchantName: String
+    let description: String
+    let amount: Double
+    let date: String
+    let category: String
+    let isDeductible: Bool
+}
+```
+
+**UI Mapping:**
+- **Total Deductible Card** → `totalDeductible`
+- **"from last month" text** → `lastMonthChange`
+- **Business Expenses Card** → `categoryBreakdown["Business Expenses"]`
+- **Office Supplies Card** → `categoryBreakdown["Office Supplies"]`
+- **Recommendation Banner** → `recommendation` object
+- **Transaction List** → `recentTransactions` array
+
+---
+
 ## 🏢 BUSINESS PROFILE
 
 ### Get Business Profile
