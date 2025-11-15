@@ -134,5 +134,94 @@ public class TaxController {
         
         return ResponseEntity.ok(deductions);
     }
+    
+    @GetMapping("/ready")
+    @Operation(summary = "Get Tax Ready page data (complete data for 2024 expenses)")
+    public ResponseEntity<Map<String, Object>> getTaxReadyData() {
+        Business business = businessRepository.findFirstByIsActiveTrueOrderByCreatedAtDesc()
+                .orElseThrow(() -> new RuntimeException("No active business found"));
+        
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime lastMonth = now.minusMonths(1);
+        LocalDateTime lastMonthStart = lastMonth.withDayOfMonth(1).withHour(0).withMinute(0).withSecond(0);
+        LocalDateTime lastMonthEnd = lastMonth.withDayOfMonth(lastMonth.toLocalDate().lengthOfMonth())
+                .withHour(23).withMinute(59).withSecond(59);
+        
+        // Get all deductible transactions for 2024
+        java.util.List<Transaction> allTransactions = transactionService.getDeductibleTransactions(business.getId());
+        
+        // Calculate total deductible
+        java.math.BigDecimal totalDeductible = allTransactions.stream()
+                .filter(t -> t.getIsTaxDeductible())
+                .map(Transaction::getAmount)
+                .reduce(java.math.BigDecimal.ZERO, java.math.BigDecimal::add);
+        
+        // Calculate last month deductible
+        java.math.BigDecimal lastMonthDeductible = allTransactions.stream()
+                .filter(t -> t.getIsTaxDeductible())
+                .filter(t -> t.getTransactionDate().isAfter(lastMonthStart) && 
+                            t.getTransactionDate().isBefore(lastMonthEnd))
+                .map(Transaction::getAmount)
+                .reduce(java.math.BigDecimal.ZERO, java.math.BigDecimal::add);
+        
+        // Calculate category breakdowns
+        java.util.Map<String, java.math.BigDecimal> categoryBreakdown = new java.util.HashMap<>();
+        for (Transaction t : allTransactions) {
+            if (t.getIsTaxDeductible() && t.getCategory() != null) {
+                String categoryName = getCategoryDisplayName(t.getCategory().name());
+                categoryBreakdown.merge(categoryName, t.getAmount(), java.math.BigDecimal::add);
+            }
+        }
+        
+        // Prepare response
+        Map<String, Object> response = new HashMap<>();
+        response.put("year", 2024);
+        response.put("totalDeductible", totalDeductible);
+        response.put("lastMonthChange", lastMonthDeductible);
+        response.put("categoryBreakdown", categoryBreakdown);
+        
+        // Add recommendation
+        Map<String, Object> recommendation = new HashMap<>();
+        recommendation.put("type", "SIMPLIFIED_TAXATION");
+        recommendation.put("title", "Simplified Taxation recommended");
+        recommendation.put("message", "Based on your expense profile, simplified taxation (sadələşdirilmiş vergi) could save you more");
+        recommendation.put("actionUrl", "/recommendations");
+        response.put("recommendation", recommendation);
+        
+        // Add recent deductible transactions (limit 10)
+        java.util.List<Map<String, Object>> recentTransactions = new java.util.ArrayList<>();
+        allTransactions.stream()
+                .filter(t -> t.getIsTaxDeductible())
+                .sorted((a, b) -> b.getTransactionDate().compareTo(a.getTransactionDate()))
+                .limit(10)
+                .forEach(t -> {
+                    Map<String, Object> txn = new HashMap<>();
+                    txn.put("id", t.getId());
+                    txn.put("merchantName", t.getMerchantName());
+                    txn.put("description", t.getDescription());
+                    txn.put("amount", t.getAmount());
+                    txn.put("date", t.getTransactionDate().toLocalDate());
+                    txn.put("category", t.getCategory() != null ? t.getCategory().name() : "OTHER");
+                    txn.put("isDeductible", t.getIsTaxDeductible());
+                    recentTransactions.add(txn);
+                });
+        response.put("recentTransactions", recentTransactions);
+        
+        return ResponseEntity.ok(response);
+    }
+    
+    private String getCategoryDisplayName(String category) {
+        switch (category) {
+            case "FOOD_SUPPLIES": return "Business Expenses";
+            case "OFFICE_SUPPLIES": return "Office Supplies";
+            case "RENT": return "Rent";
+            case "UTILITIES": return "Utilities";
+            case "TELECOMMUNICATIONS": return "Telecommunications";
+            case "EQUIPMENT": return "Equipment";
+            case "SALARIES": return "Salaries";
+            case "MARKETING": return "Marketing";
+            default: return "Other";
+        }
+    }
 }
 

@@ -64,6 +64,13 @@ public class TransactionService {
         return transactionRepository.save(transaction);
     }
     
+    /**
+     * Get all deductible transactions
+     */
+    public List<Transaction> getDeductibleTransactions(Long businessId) {
+        return transactionRepository.findByBusinessIdAndIsTaxDeductibleTrue(businessId);
+    }
+    
     private TransactionDTO convertToDTO(Transaction t) {
         TransactionDTO dto = new TransactionDTO();
         dto.setId(t.getId());
